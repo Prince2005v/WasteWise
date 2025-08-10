@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Waste Sorting System</title>
+    <link href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('index') }}">
+                <i class="fas fa-recycle me-2"></i>
+                Smart Waste Sorting System
+            </a>
+        </div>
+    </nav>
+
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="text-center mb-5">
+                    <h1 class="display-4 mb-3">
+                        <i class="fas fa-leaf text-success"></i>
+                        Smart Waste Classification
+                    </h1>
+                    <p class="lead">
+                        Upload an image of waste and our AI will help you sort it properly into 
+                        biodegradable, recyclable, or landfill categories.
+                    </p>
+                </div>
+
+                <!-- Flash Messages -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ 'danger' if category == 'error' else 'info' }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+
+                <!-- Upload Form -->
+                <div class="card shadow-lg">
+                    <div class="card-header">
+                        <h3 class="card-title mb-0">
+                            <i class="fas fa-cloud-upload-alt me-2"></i>
+                            Upload Waste Image
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <form id="uploadForm" action="{{ url_for('upload_file') }}" method="post" enctype="multipart/form-data">
+                            <div class="mb-4">
+                                <div id="dropZone" class="drop-zone text-center p-5 border border-2 border-dashed rounded">
+                                    <i class="fas fa-cloud-upload-alt fa-3x text-muted mb-3"></i>
+                                    <h5>Drag and drop your image here</h5>
+                                    <p class="text-muted">or click to select a file</p>
+                                    <input type="file" id="fileInput" name="file" accept="image/*" class="d-none" required>
+                                    <button type="button" class="btn btn-outline-primary" onclick="document.getElementById('fileInput').click()">
+                                        <i class="fas fa-folder-open me-2"></i>
+                                        Choose File
+                                    </button>
+                                </div>
+                                <div id="fileInfo" class="mt-3 d-none">
+                                    <div class="alert alert-info">
+                                        <i class="fas fa-file-image me-2"></i>
+                                        <span id="fileName"></span>
+                                        <button type="button" class="btn btn-sm btn-outline-danger ms-2" onclick="clearFile()">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-success btn-lg" disabled id="submitBtn">
+                                    <i class="fas fa-search me-2"></i>
+                                    Classify Waste
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Instructions -->
+                <div class="row mt-5">
+                    <div class="col-md-4">
+                        <div class="card h-100">
+                            <div class="card-body text-center">
+                                <i class="fas fa-seedling fa-2x text-success mb-3"></i>
+                                <h5 class="card-title">Biodegradable</h5>
+                                <p class="card-text">
+                                    Organic waste that can decompose naturally like food scraps, leaves, and paper.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card h-100">
+                            <div class="card-body text-center">
+                                <i class="fas fa-recycle fa-2x text-info mb-3"></i>
+                                <h5 class="card-title">Recyclable</h5>
+                                <p class="card-text">
+                                    Materials that can be processed into new products like plastic, metal, and glass.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card h-100">
+                            <div class="card-body text-center">
+                                <i class="fas fa-trash fa-2x text-warning mb-3"></i>
+                                <h5 class="card-title">Landfill</h5>
+                                <p class="card-text">
+                                    Non-recyclable waste that must be disposed of in regular trash collection.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- API Information -->
+                <div class="card mt-5">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-code me-2"></i>
+                            API Endpoint
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <p>You can also use our API programmatically:</p>
+                        <code>POST {{ request.url_root }}predict</code>
+                        <p class="mt-2 mb-0">
+                            <small class="text-muted">
+                                Send a multipart form with an 'file' field containing your image.
+                            </small>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="bg-dark text-light py-4 mt-5">
+        <div class="container text-center">
+            <p>&copy; 2025 Smart Waste Sorting System. Help protect our environment! 🌍</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
